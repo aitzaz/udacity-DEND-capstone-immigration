@@ -1,0 +1,18 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+awscli = "*"
+
+[packages]
+pandas = "~=1.0.4"
+numpy = "~=1.18.5"
+matplotlib = "~=3.2.1"
+notebook = "~=6.0.3"
+pyspark = "~=2.4.6"
+pyarrow = "~=0.17.1"
+
+[requires]
+python_full_version = "3.7.7"

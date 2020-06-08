@@ -18,7 +18,8 @@ logger.setLevel(logging.INFO)
 config = configparser.ConfigParser()
 config.read('capstone.cfg')
 
-I94_APR_DATA_FILE_PATH = config['DATA']['I94_APR_DATA_FILE_PATH']
+I94_DATA_FILE_PATH = config['DATA']['I94_APR_DATA_FILE_PATH']
+I94_LOCAL_DATA_DIR = config['DATA']['I94_LOCAL_DATA_DIR']
 DEMOGRAPHICS_DATA_PATH = config['DATA']['SUPPLEMENTARY_DATASETS_DIR'] + 'us-cities-demographics.csv'
 SAS_LABELS_DESCRIPTION_FILE_PATH = config['DATA']['SAS_LABELS_DESCRIPTION_FILE_PATH']
 OUTPUT_DATA_DIR = config['DATA']['OUTPUT_DATA_DIR']
@@ -108,7 +109,10 @@ def get_spark_session() -> SparkSession:
         .config("spark.jars.packages", "saurfang:spark-sas7bdat:2.0.0-s_2.11") \
         .enableHiveSupport() \
         .getOrCreate()
-    spark.conf.set("spark.sql.shuffle.partitions", 50)      # To reduce data shuffling for smaller datasets
+
+    # # To limit data shuffling for smaller datasets
+    # spark_shuffle_partitions: int = int(config['COMMON']['NUM_SPARK_SHUFFLE_PARTITIONS'])
+    # spark.conf.set("spark.sql.shuffle.partitions", spark_shuffle_partitions)
 
     logger.info("Spark session created")
     return spark
@@ -142,8 +146,16 @@ def get_data_from_sas_labels_file(label_name: str) -> List[Tuple[str, str]]:
 
 
 def get_immigration_data(spark: SparkSession) -> DataFrame:
-    """Reads immigration data sas file specified in config and returns in a spark DataFrame."""
-    return spark.read.format('com.github.saurfang.sas.spark').load(I94_APR_DATA_FILE_PATH)
+    """
+    Reads immigration data SAS file specified in config and returns in a spark DataFrame.
+    In case SAS file doesn't exist, read data from `sas_data` dir in parquet format.
+    """
+    if Path(I94_DATA_FILE_PATH).exists():
+        logger.info(f"Reading SAS7BDAT file form path: {I94_DATA_FILE_PATH}")
+        return spark.read.format('com.github.saurfang.sas.spark').load(I94_DATA_FILE_PATH)
+    else:
+        logger.info(f"Reading PARQUET data form path: {I94_LOCAL_DATA_DIR}")
+        return spark.read.parquet(I94_LOCAL_DATA_DIR)
 
 
 def get_us_demographics_data(spark: SparkSession) -> DataFrame:

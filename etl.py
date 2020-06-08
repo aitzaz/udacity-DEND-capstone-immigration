@@ -61,28 +61,8 @@ def main() -> None:
     logger.info("City demographics dim table created")
 
     # data quality checks
-    if immigration_fact_table.count() == 0:
-        Exception("Invalid dataset. Immigrations fact table is empty.")
-
-    if city_demographics_table.count() == 0:
-        Exception("Invalid dataset. City demographics dim table is empty.")
-
-    if cleaned_ports_df.count() == 0:
-        Exception("Invalid dataset. Port dim table is empty.")
-
-    if cleaned_countries_df.count() == 0:
-        Exception("Invalid dataset. Country dim table is empty.")
-
-    if cleaned_states_df.count() == 0:
-        Exception("Invalid dataset. US State dim table is empty.")
-
-    if visa_categories_df.count() == 0:
-        Exception("Invalid dataset. Visa Category dim table is empty.")
-
-    if travel_modes_df.count() == 0:
-        Exception("Invalid dataset. Travel mode dim table is empty.")
-
-    logger.info("Data quality checks passed")
+    perform_data_quality_checks(immigration_fact_table, city_demographics_table, cleaned_countries_df,
+                                cleaned_states_df, cleaned_ports_df, travel_modes_df, visa_categories_df)
 
     # Save tables in parquet format
     logger.info("Writing data in parquet format")
@@ -266,7 +246,6 @@ def clean_immigration_data(immigration_df: DataFrame) -> DataFrame:
 def clean_us_demographics_data(us_demographics_df: DataFrame) -> DataFrame:
     """Clean US demographics dataset."""
     return us_demographics_df \
-        .dropna() \
         .dropDuplicates()
 
 
@@ -376,6 +355,60 @@ def create_city_demographics_dim_table(spark: SparkSession, us_demographics_df: 
                 JOIN combined_demographics cd 
                     ON lower(cd.city) = lower(sp.city) AND cd.state_code = sp.state_code
         """)
+
+
+def perform_data_quality_checks(immigration_fact_table: DataFrame, city_demographics_table: DataFrame,
+                                countries_df: DataFrame, states_df: DataFrame, ports_df: DataFrame,
+                                travel_modes_df: DataFrame, visa_categories_df: DataFrame) -> None:
+    """
+    Performs two data quality checks against dataframes.
+    1. Each table is not empty.
+    2. Validate that immigrations fact table contains only valid values as per dimensional tables.
+    """
+    # First quality check - Non-empty dataframes/tables
+    if immigration_fact_table.count() == 0:
+        Exception("Invalid dataset. Immigrations fact table is empty.")
+
+    if city_demographics_table.count() == 0:
+        Exception("Invalid dataset. City demographics dim table is empty.")
+
+    if ports_df.count() == 0:
+        Exception("Invalid dataset. Port dim table is empty.")
+
+    if countries_df.count() == 0:
+        Exception("Invalid dataset. Country dim table is empty.")
+
+    if states_df.count() == 0:
+        Exception("Invalid dataset. US State dim table is empty.")
+
+    if visa_categories_df.count() == 0:
+        Exception("Invalid dataset. Visa Category dim table is empty.")
+
+    if travel_modes_df.count() == 0:
+        Exception("Invalid dataset. Travel mode dim table is empty.")
+
+    # Second data quality check - Data in fact table is valid
+    if (immigration_fact_table.select("visa_category_code").distinct().count()
+            != visa_categories_df.distinct().count()):
+        Exception("Visa category codes in fact table are inconsistent with dimensional table")
+
+    if (immigration_fact_table.select("travel_mode_code").distinct().count()
+            != travel_modes_df.distinct().count()):
+        Exception("Travel mode codes in fact table are inconsistent with dimensional table")
+
+    if (immigration_fact_table.select("port_code").distinct().count()
+            != ports_df.distinct().count()):
+        Exception("Port codes in fact table are inconsistent with dimensional table")
+
+    if (immigration_fact_table.select("origin_country_code").distinct().count()
+            != countries_df.distinct().count()):
+        Exception("Origin country codes in fact table are inconsistent with dimensional table")
+
+    if (immigration_fact_table.select("us_state_code").distinct().count()
+            != states_df.distinct().count()):
+        Exception("US state codes in fact table are inconsistent with dimensional table")
+
+    logger.info("Data quality checks passed")
 
 
 if __name__ == '__main__':

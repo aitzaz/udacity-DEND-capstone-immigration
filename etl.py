@@ -18,7 +18,7 @@ logger.setLevel(logging.INFO)
 config = configparser.ConfigParser()
 config.read('capstone.cfg')
 
-I94_DATA_FILE_PATH = config['DATA']['I94_APR_DATA_FILE_PATH']
+I94_DATA_FILE_PATH = config['DATA']['I94_DATA_FILE_PATH']
 I94_LOCAL_DATA_DIR = config['DATA']['I94_LOCAL_DATA_DIR']
 DEMOGRAPHICS_DATA_PATH = config['DATA']['SUPPLEMENTARY_DATASETS_DIR'] + 'us-cities-demographics.csv'
 SAS_LABELS_DESCRIPTION_FILE_PATH = config['DATA']['SAS_LABELS_DESCRIPTION_FILE_PATH']

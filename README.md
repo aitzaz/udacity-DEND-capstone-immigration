@@ -8,8 +8,10 @@ I plan to create a data lake using Pyspark about immigrants destinations in US. 
 
 A few sample queries include:
 - Which city was most visited in a specific month?
-- From which country (or countries) travelers originate? Top countries of origin.
-- Top countries from where students are coming?
+    ![Udacity DEND I94 Immigrations Data Model](images/most_visited_us_cities_in_apr_2016.png)<br/>
+    Check full image with query [here](images/most_visited_us_cities_in_apr_2016_with_query.png).
+- From which country (or countries) travelers originate? Top countries of origin. [Query and output](images/us_visitors_origin_countries_top_10.png)
+- Top countries from where students are coming? [Query and output](images/students_visting_us_top_origin_countries.png)
 
 ## Datasets
 Following datasets are used for this project:
@@ -28,6 +30,8 @@ I've used these two datasets and both are in different formats i.e. sas, csv.
 I've noted some observations about I94 Immigrations data in Datasets section. This data contains many columns with empty values and I've dropped most of those in final fact table creation. `biryear` columns have some invalid values which are removed in cleaning.
 
 US cities demographics data is pretty clean but have duplicate rows for cities which are later combined when creating city demographics dimensional table.
+
+An IPython notebook is also included showing some EDA steps. 
 
 ## Data Model
 Here is the final Star Schema data model:

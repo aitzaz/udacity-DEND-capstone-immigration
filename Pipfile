@@ -10,7 +10,7 @@ awscli = "*"
 pandas = "~=1.0.4"
 numpy = "~=1.18.5"
 matplotlib = "~=3.2.1"
-notebook = "~=6.0.3"
+notebook = "~=6.4.12"
 pyspark = "~=2.4.6"
 pyarrow = "~=0.17.1"
 
